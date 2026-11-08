@@ -1,0 +1,1819 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>เกมตกโน้ต</title>
+<meta name="description" content="เกมฝึกอ่านโน้ตบนบรรทัด 5 เส้น กดชื่อโน้ตให้ทันก่อนการ์ดจะตกถึงเส้น">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#dfe9ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1a21" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%239a6a1f'/%3E%3Cg stroke='%23fdf6e9' stroke-width='1.6'%3E%3Cline x1='9' y1='9' x2='9' y2='23'/%3E%3Cline x1='16' y1='7' x2='16' y2='21'/%3E%3Cline x1='23' y1='9' x2='23' y2='23'/%3E%3C/g%3E%3Cellipse cx='13' cy='21' rx='4.2' ry='3.1' transform='rotate(-20 13 21)' fill='%23fdf6e9'/%3E%3C/svg%3E">
+<meta property="og:title" content="เกมตกโน้ต">
+<meta property="og:description" content="เกมฝึกอ่านโน้ตบนบรรทัด 5 เส้น กดชื่อโน้ตให้ทันก่อนการ์ดจะตกถึงเส้น">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="th_TH">
+<style>
+  /* ---- โทเคนสี (สว่าง) ---- */
+  :root {
+    --bg: #dfe9ef;
+    --surface: #ffffff;
+    --surface-2: #f3f8fa;
+    --line: #c6d6e0;
+    --line-strong: #b5c8d4;
+    --text: #17252f;
+    --text-soft: #33454f;
+    --muted: #5f7584;
+    --action: #c4421f;
+    --action-ink: #ffffff;
+    --action-soft: #fdece7;
+    --blue: #3f6f8d;
+    --blue-soft: #e3eef5;
+    --brass: #9a6a1f;
+    --key-white: #ffffff;
+    --key-white-press: #e6eef3;
+    --key-black: #1b2b36;
+    --key-black-press: #3b4e5b;
+    --key-line: #b5c8d4;
+    --key-black-ink: #f2f8fc;
+    --good: #2e7d59;
+    --warn: #9a6a1f;
+    --bad: #b3261e;
+  }
+  /* ---- โทเคนสี (มืด) ---- */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0f1a21;
+      --surface: #172630;
+      --surface-2: #1c2f3b;
+      --line: #2c4150;
+      --line-strong: #3a5263;
+      --text: #e6eef3;
+      --text-soft: #c3d3dc;
+      --muted: #8ea3b1;
+      --action: #f07a5a;
+      --action-ink: #1b0e09;
+      --action-soft: #3a221b;
+      --blue: #8cb8d3;
+      --blue-soft: #1d3442;
+      --brass: #d9a94f;
+      --key-white: #22343f;
+      --key-white-press: #2f4655;
+      --key-black: #0a1218;
+      --key-black-press: #1b2b36;
+      --key-line: #3a5263;
+      --key-black-ink: #d7e6ef;
+      --good: #7fd1a6;
+      --warn: #e3b04b;
+      --bad: #ff8a80;
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100svh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Sarabun", "Leelawadee UI", "Noto Sans Thai", Thonburi, Tahoma, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .app {
+    max-width: 560px;
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 12px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  /* ---- หัวเกม ---- */
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+    min-height: 44px;
+  }
+  h1 {
+    margin: 0;
+    font-size: 22px;
+    line-height: 1.35;
+    font-weight: 700;
+    text-wrap: balance;
+    min-width: 0;
+  }
+  .hud { display: flex; align-items: center; gap: 12px; }
+  .lives { display: flex; gap: 2px; }
+  .heart { width: 18px; height: 18px; display: block; }
+  .heart path {
+    fill: var(--bad);
+    stroke: var(--bad);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+  .heart.off path { fill: none; stroke: var(--line-strong); stroke-width: 1.5; }
+  .score-box { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+  .score-lbl { font-size: 12.8px; color: var(--text-soft); }
+  .score-num {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--brass);
+    font-variant-numeric: tabular-nums;
+  }
+  .mult {
+    display: inline-block;
+    font-size: 14.4px;
+    font-weight: 700;
+    color: var(--brass);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0 8px;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+  }
+  .mult[hidden] { display: none; }
+
+  .notice {
+    margin: 0;
+    font-size: 12.8px;
+    line-height: 1.5;
+    color: var(--text-soft);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 8px 12px;
+  }
+  .notice[hidden] { display: none; }
+
+  /* ---- สนามเล่น ---- */
+  .field {
+    position: relative;
+    height: min(52vh, 420px);
+    height: min(52svh, 420px);
+    flex: none;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .lanes {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: space-evenly;
+    pointer-events: none;
+  }
+  .lanes i { width: 1px; background: var(--line); }
+
+  .catch {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--brass);
+    transition: background-color 200ms ease;
+    z-index: 3;
+  }
+  .catch.good { background: var(--good); }
+  .catch.bad { background: var(--bad); }
+
+  /* ---- การ์ดโน้ต (องค์ประกอบเอกลักษณ์) ---- */
+  .card {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 132px;
+    height: 104px;
+    margin-left: -66px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform;
+    contain: layout style;
+  }
+  .card[hidden] { display: none; }
+  .card svg { display: block; width: 100%; height: 100%; }
+  .staff-line { stroke: var(--text-soft); stroke-width: 1.5; stroke-linecap: butt; }
+  .staff-ledger { stroke: var(--text-soft); stroke-width: 1.5; }
+  .notehead { fill: var(--text); }
+  /* เคลฟวาดด้วยเส้น ไม่ใช้ยูนิโคด เพื่อให้ครอบคลุมทุกเครื่อง */
+  .clef-stroke {
+    fill: none;
+    stroke: var(--text-soft);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .clef-dot { fill: var(--text-soft); }
+  .acc-stroke {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .card .big {
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .feedback {
+    position: absolute;
+    top: 10px;
+    left: 8px;
+    right: 8px;
+    z-index: 4;
+    margin: 0 auto;
+    width: fit-content;
+    max-width: 100%;
+    padding: 2px 12px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    font-size: 14.4px;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 160ms ease;
+    pointer-events: none;
+  }
+  .feedback.show { opacity: 1; }
+  .feedback.good { color: var(--good); }
+  .feedback.bad { color: var(--bad); }
+
+  /* ---- แผงสถานะ ---- */
+  .panel {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    justify-content: safe center;
+    gap: 8px;
+    padding: 16px;
+    text-align: center;
+    overflow-y: auto;
+    background: var(--surface);
+  }
+  @supports (background: color-mix(in srgb, red 50%, blue)) {
+    .panel { background: color-mix(in srgb, var(--surface) 92%, transparent); }
+  }
+  .panel[hidden] { display: none; }
+  .panel-dim { background: var(--surface); }
+  @supports (background: color-mix(in srgb, red 50%, blue)) {
+    .panel-dim { background: color-mix(in srgb, var(--surface) 97%, transparent); }
+  }
+  .panel-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-wrap: balance;
+  }
+  .panel-note {
+    margin: 0;
+    font-size: 14.4px;
+    line-height: 1.6;
+    color: var(--text-soft);
+    max-width: 30ch;
+  }
+  .panel-best {
+    margin: 0;
+    font-size: 14.4px;
+    line-height: 1.5;
+    color: var(--text-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .panel-best strong { color: var(--brass); font-weight: 700; }
+  .final-score {
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--brass);
+    font-variant-numeric: tabular-nums;
+    margin: -4px 0;
+  }
+  .new-best {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 0 8px;
+    border: 1px solid var(--good);
+    border-radius: 999px;
+    font-size: 12.8px;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--good);
+    white-space: nowrap;
+    vertical-align: 1px;
+  }
+  .new-best[hidden] { display: none; }
+  #panelOver { gap: 3px; padding: 8px 16px; }
+  #panelOver .panel-title { font-size: 18px; }
+  #panelOver .final-score { margin: 0; line-height: 1.1; }
+  .over-line {
+    margin: 0;
+    font-size: 14.4px;
+    line-height: 1.4;
+    color: var(--text-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .misses { width: 100%; max-width: 260px; }
+  .misses[hidden] { display: none; }
+  .miss-title {
+    margin: 0 0 2px;
+    font-size: 12.8px;
+    line-height: 1.4;
+    color: var(--text-soft);
+  }
+  .miss-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .miss-table th, .miss-table td {
+    padding: 1px 8px;
+    line-height: 1.4;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    font-weight: 400;
+  }
+  .miss-table td { text-align: right; }
+  .miss-table tr:last-child th, .miss-table tr:last-child td { border-bottom: 0; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+
+  /* ---- ปุ่ม ---- */
+  .btn {
+    min-height: 52px;
+    padding: 0 24px;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.4;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: transform 120ms ease, background-color 150ms ease;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn[disabled] { opacity: .5; cursor: default; }
+  .btn-primary { background: var(--action); color: var(--action-ink); border: 1px solid var(--action); }
+  .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--line); }
+
+  /* ---- แป้นตอบ ---- */
+  .pad {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(44px, 1fr));
+    gap: 6px;
+  }
+  .pad button {
+    min-width: 44px;
+    min-height: 64px;
+    padding: 4px 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    font: inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: background-color 150ms ease, border-color 150ms ease, transform 120ms ease;
+  }
+  .pad button:active { transform: scale(.98); background: var(--surface-2); }
+  .pad .k { font-size: 22px; font-weight: 700; line-height: 1.15; }
+  .pad.solfege .k { font-size: 18px; }
+  .pad .hint {
+    font-size: 12.8px;
+    line-height: 1.2;
+    color: var(--muted);
+  }
+  @media (hover: none) { .pad .hint { display: none; } }
+  @media (max-width: 400px) { .pad { margin-inline: -8px; } }
+  @media (max-width: 359px) {
+    .pad { grid-template-columns: repeat(4, minmax(44px, 1fr)); margin-inline: -8px; }
+    /* จอแคบมาก: พื้นที่เล่นเตี้ยลงเล็กน้อย เพื่อให้แป้นตอบอยู่ครบในจอ */
+    .field { height: min(47vh, 420px); height: min(47svh, 420px); }
+  }
+
+  /* ---- ตัวเลือก ---- */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; }
+  .opt-label {
+    flex: 0 0 auto;
+    font-size: 14.4px;
+    color: var(--text-soft);
+  }
+  .seg {
+    display: flex;
+    gap: 4px;
+    flex: 1 1 200px;
+    padding: 4px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .seg button {
+    flex: 1 1 0;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 4px 6px;
+    background: transparent;
+    color: var(--text-soft);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 14.4px;
+    font-weight: 700;
+    line-height: 1.4;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+  .seg button[aria-pressed="true"] {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: inset 0 0 0 1px var(--blue);
+  }
+  .seg button[disabled] { opacity: .5; cursor: default; }
+
+  /* ---- สลับวิธีตอบ (อยู่ติดกับคีย์เสมอ) ---- */
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .input-label {
+    flex: 0 0 auto;
+    font-size: 12.8px;
+    color: var(--text-soft);
+  }
+  .input-seg { flex: 1 1 auto; padding: 3px; }
+  .input-seg button { min-height: 44px; font-size: 13px; }
+
+  /* ---- คีย์เปียโน ---- */
+  .piano {
+    position: relative;
+    height: 124px;
+    padding: 5px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .piano[hidden] { display: none; }
+  .piano-whites { display: flex; gap: 2px; height: 100%; }
+  .key-white {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px;
+    padding: 0 0 6px;
+    background: var(--key-white);
+    color: var(--text-soft);
+    border: 1px solid var(--key-line);
+    border-radius: 0 0 7px 7px;
+    font: inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: background-color 120ms ease;
+  }
+  .key-white:active { background: var(--key-white-press); }
+  .piano-blacks { position: absolute; top: 5px; left: 5px; right: 5px; bottom: 5px; pointer-events: none; }
+  .key-black {
+    position: absolute;
+    top: 0;
+    height: 62%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 0 5px;
+    background: var(--key-black);
+    color: var(--key-line);
+    border: 1px solid var(--key-black);
+    border-radius: 0 0 6px 6px;
+    font: inherit;
+    cursor: pointer;
+    pointer-events: auto;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: background-color 120ms ease;
+  }
+  .key-black:active { background: var(--key-black-press); }
+  /* ขยายพื้นที่กดของคีย์ดำให้กดง่ายขึ้น โดยไม่เปลี่ยนรูปทรง */
+  .key-black::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: -2px;
+    left: -5px;
+    right: -5px;
+  }
+  /* ชื่อโน้ตบนคีย์: ต้องอ่านง่ายและคอนทราสต์ถูกเสมอ */
+  .key-note {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+    color: var(--text);
+  }
+  .key-black .key-note {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    font-size: 11px;
+    line-height: 1.1;
+    color: var(--key-black-ink);
+  }
+  .key-hint { font-size: 10px; line-height: 1; color: var(--muted); }
+  @media (hover: none) { .key-hint { display: none; } }
+  .pad[hidden] { display: none; }
+
+  /* ---- แถบเครื่องหมายแปลงเสียง ---- */
+  .acc-pad {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(44px, 1fr));
+    gap: 6px;
+  }
+  .acc-pad[hidden] { display: none; }
+  .acc-pad button {
+    min-width: 44px;
+    min-height: 46px;
+    padding: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    color: var(--text-soft);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    font: inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: background-color 150ms ease, color 150ms ease, transform 120ms ease;
+  }
+  .acc-pad button:active { transform: scale(.98); }
+  .acc-pad button[aria-pressed="true"] {
+    background: var(--surface-2);
+    color: var(--text);
+    border-color: var(--blue);
+    box-shadow: inset 0 0 0 2px var(--blue);
+  }
+  .acc-pad button[disabled] { opacity: .5; cursor: default; }
+  .acc-icon { width: 26px; height: 26px; display: block; }
+  .acc-pad .hint {
+    font-size: 12.8px;
+    line-height: 1;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  @media (hover: none) { .acc-pad .hint { display: none; } }
+
+  /* ---- เลือกเคลฟ ---- */
+  .clef-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    flex: 1 1 240px;
+    padding: 4px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .clef-grid button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 2px 6px;
+    background: transparent;
+    color: var(--text-soft);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 12.8px;
+    font-weight: 700;
+    line-height: 1.35;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+  .clef-grid button[aria-pressed="true"] {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: inset 0 0 0 1px var(--blue);
+  }
+  .clef-grid button[disabled] { opacity: .5; cursor: default; }
+  .clef-grid .clef-mixed { grid-column: 1 / -1; }
+  .clef-icon { height: 22px; width: auto; display: block; flex: none; }
+  .clef-icon .clef-stroke { stroke-width: 2.6; }
+  .clef-icon .clef-dot { fill: var(--text-soft); }
+
+  /* ---- ตั้งค่า ---- */
+  .settings {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .settings summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 16px;
+    font-size: 14.4px;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+    touch-action: manipulation;
+    border-radius: 12px;
+  }
+  .settings summary::-webkit-details-marker { display: none; }
+  .settings summary::after {
+    content: "▾";
+    margin-left: auto;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .settings[open] summary::after { content: "▴"; }
+  .settings-body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 0 16px 16px;
+  }
+  .settings-body label {
+    font-size: 14.4px;
+    color: var(--text-soft);
+    flex: 0 0 auto;
+  }
+  .settings-body input[type="range"] {
+    flex: 1 1 140px;
+    height: 44px;
+    min-width: 120px;
+    accent-color: var(--blue);
+    touch-action: manipulation;
+  }
+
+  .foot {
+    margin: 0;
+    font-size: 12.8px;
+    line-height: 1.5;
+    color: var(--text-soft);
+    text-align: center;
+  }
+
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0ms !important;
+      animation: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+<main class="app">
+
+  <header class="head">
+    <h1>เกมตกโน้ต</h1>
+    <div class="hud">
+      <div class="lives" id="lives" role="img" aria-label="ชีวิตเหลือ 3">
+        <svg class="heart" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 15.6C9 15.6 2.2 11.2 2.2 6.5 2.2 4.1 4 2.3 6.3 2.3c1.4 0 2.5.7 3 1.8.5-1.1 1.6-1.8 3-1.8 2.3 0 4.1 1.8 4.1 4.2 0 4.7-6.8 9.1-6.8 9.1z"/></svg>
+        <svg class="heart" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 15.6C9 15.6 2.2 11.2 2.2 6.5 2.2 4.1 4 2.3 6.3 2.3c1.4 0 2.5.7 3 1.8.5-1.1 1.6-1.8 3-1.8 2.3 0 4.1 1.8 4.1 4.2 0 4.7-6.8 9.1-6.8 9.1z"/></svg>
+        <svg class="heart" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 15.6C9 15.6 2.2 11.2 2.2 6.5 2.2 4.1 4 2.3 6.3 2.3c1.4 0 2.5.7 3 1.8.5-1.1 1.6-1.8 3-1.8 2.3 0 4.1 1.8 4.1 4.2 0 4.7-6.8 9.1-6.8 9.1z"/></svg>
+      </div>
+      <div class="score-box">
+        <span class="score-lbl">คะแนน</span>
+        <span class="score-num" id="scoreNum">0</span>
+        <span class="mult" id="mult" hidden>×2</span>
+      </div>
+    </div>
+  </header>
+
+  <p class="notice" id="storageNotice" hidden>เบราว์เซอร์นี้เก็บคะแนนสูงสุดไม่ได้ เกมยังเล่นได้ตามปกติ</p>
+
+  <section class="field" id="field" aria-label="สนามเล่น">
+    <div class="lanes" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="catch" id="catch"></div>
+    <div class="card" id="card" role="img" aria-label="โน้ต" hidden></div>
+    <p class="feedback" id="feedback" aria-hidden="true"></p>
+
+    <div class="panel" id="panelIdle">
+      <h2 class="panel-title">เกมตกโน้ต</h2>
+      <p class="panel-note" id="idleNote">ดูโน้ตที่ตกลงมา แล้วกดชื่อโน้ตให้ทันก่อนถึงเส้น</p>
+      <p class="panel-best">คะแนนสูงสุด <strong id="idleBest">0</strong></p>
+      <button class="btn btn-primary" id="startBtn" type="button">เริ่มเกม</button>
+    </div>
+
+    <div class="panel panel-dim" id="panelPaused" hidden>
+      <h2 class="panel-title">หยุดชั่วคราว</h2>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="resumeBtn" type="button">เล่นต่อ</button>
+        <button class="btn btn-secondary" id="restartBtn" type="button">เริ่มใหม่</button>
+      </div>
+    </div>
+
+    <div class="panel" id="panelOver" hidden>
+      <h2 class="panel-title">จบเกม</h2>
+      <div class="final-score" id="finalScore">0</div>
+      <p class="panel-best">คะแนนสูงสุด <strong id="overBest">0</strong><span class="new-best" id="newBest" hidden>สถิติใหม่!</span></p>
+      <p class="over-line"><span id="overCorrect">ตอบถูก 0 ข้อ</span> · <span id="overAcc">แม่นยำ 0%</span></p>
+      <div class="misses" id="missesBox" hidden>
+        <p class="miss-title">โน้ตที่พลาดบ่อย</p>
+        <table class="miss-table">
+          <caption class="sr-only">โน้ตที่พลาดบ่อย</caption>
+          <tbody id="missRows"></tbody>
+        </table>
+      </div>
+      <button class="btn btn-primary" id="againBtn" type="button">เล่นอีกครั้ง</button>
+    </div>
+  </section>
+
+  <div class="input-row">
+    <span class="input-label" id="inputLabel">ตอบด้วย</span>
+    <div class="seg input-seg" id="inputSeg" role="group" aria-labelledby="inputLabel">
+      <button type="button" data-v="name" aria-pressed="true">ชื่อโน้ต</button>
+      <button type="button" data-v="piano" aria-pressed="false">เปียโน</button>
+    </div>
+  </div>
+
+  <div class="piano" id="piano" role="group" aria-label="คีย์เปียโน" hidden>
+    <div class="piano-whites" id="pianoWhites"></div>
+    <div class="piano-blacks" id="pianoBlacks"></div>
+  </div>
+
+  <div class="acc-pad" id="accPad" role="group" aria-label="เครื่องหมายแปลงเสียง" hidden></div>
+
+  <div class="pad" id="pad" role="group" aria-label="ปุ่มตอบชื่อโน้ต"></div>
+
+  <section class="options" aria-label="ตัวเลือกเกม">
+    <div class="opt">
+      <span class="opt-label" id="lvlLabel">ระดับ</span>
+      <div class="seg" id="levelSeg" role="group" aria-labelledby="lvlLabel">
+        <button type="button" data-v="easy" aria-pressed="true">ง่าย</button>
+        <button type="button" data-v="medium" aria-pressed="false">กลาง</button>
+        <button type="button" data-v="hard" aria-pressed="false">ยาก</button>
+      </div>
+    </div>
+    <div class="opt">
+      <span class="opt-label" id="accLabel">เครื่องหมาย</span>
+      <div class="seg" id="accSeg" role="group" aria-labelledby="accLabel">
+        <button type="button" data-v="none" aria-pressed="false">ไม่มี</button>
+        <button type="button" data-v="single" aria-pressed="true">ชาร์ป–แฟล็ต</button>
+        <button type="button" data-v="all" aria-pressed="false">ทั้งหมด</button>
+      </div>
+    </div>
+    <div class="opt">
+      <span class="opt-label" id="clefLabel">เคลฟ</span>
+      <div class="clef-grid" id="clefGrid" role="group" aria-labelledby="clefLabel"></div>
+    </div>
+    <div class="opt">
+      <span class="opt-label" id="modeLabel">แสดงโน้ตแบบ</span>
+      <div class="seg" id="modeSeg" role="group" aria-labelledby="modeLabel">
+        <button type="button" data-v="staff" aria-pressed="true">บรรทัด 5 เส้น</button>
+        <button type="button" data-v="letter" aria-pressed="false">ตัวอักษร</button>
+      </div>
+    </div>
+    <div class="opt">
+      <span class="opt-label" id="nameLabel">ชื่อโน้ต</span>
+      <div class="seg" id="nameSeg" role="group" aria-labelledby="nameLabel">
+        <button type="button" data-v="latin" aria-pressed="true">C D E</button>
+        <button type="button" data-v="solfege" aria-pressed="false">โด เร มี</button>
+      </div>
+    </div>
+  </section>
+
+  <details class="settings">
+    <summary>ตั้งค่า</summary>
+    <div class="settings-body">
+      <label for="vol">ระดับเสียง</label>
+      <input id="vol" type="range" min="0" max="100" step="1" value="60">
+      <button class="btn btn-secondary" id="testBtn" type="button">ทดสอบเสียง</button>
+    </div>
+  </details>
+
+  <p class="foot">เกมตกโน้ต · สร้างด้วย AI ช่วย · วิชา 3500230</p>
+</main>
+
+<div class="sr-only" id="live" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- ค่าคงที่ ---------- */
+  var LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  var SOLFEGE = ['โด', 'เร', 'มี', 'ฟา', 'ซอล', 'ลา', 'ที'];
+  var KEY_HINTS = ['a', 's', 'd', 'f', 'g', 'h', 'j'];
+  var SEMI = [0, 2, 4, 5, 7, 9, 11];
+  /* เคลฟทั้งสี่: bottom = โน้ตบรรทัดล่างสุด, anchor = เส้นที่เคลฟชี้ */
+  var CLEF_KEYS = ['treble', 'bass', 'alto', 'tenor'];
+  var CLEFS = {
+    treble: { label: 'เทรเบิล', bottomOct: 4, bottomLetter: 2, anchor: 2 }, /* E4, เส้นซอล = ขั้น 2 */
+    bass:   { label: 'เบส',     bottomOct: 2, bottomLetter: 4, anchor: 6 }, /* G2, เส้นฟา = ขั้น 6 */
+    alto:   { label: 'อัลโต',   bottomOct: 3, bottomLetter: 3, anchor: 4 }, /* F3, เส้นโด = ขั้น 4 */
+    tenor:  { label: 'เทเนอร์', bottomOct: 3, bottomLetter: 1, anchor: 6 }  /* D3, เส้นโด = ขั้น 6 */
+  };
+  /* เครื่องหมายแปลงเสียง: ค่า offset เป็นครึ่งเสียง */
+  var ACC_KEYS = ['natural', 'sharp', 'flat', 'dsharp', 'dflat'];
+  var ACC_OFFSET = { natural: 0, sharp: 1, flat: -1, dsharp: 2, dflat: -2 };
+  var ACC_TEXT = { natural: '', sharp: '♯', flat: '♭', dsharp: '♯♯', dflat: '♭♭' };
+  var ACC_ARIA = {
+    natural: 'ธรรมชาติ', sharp: 'ชาร์ป', flat: 'แฟล็ต',
+    dsharp: 'ดับเบิลชาร์ป', dflat: 'ดับเบิลแฟล็ต'
+  };
+  /* ระดับกำหนดช่วงขั้นบนบรรทัด (ขั้น 0 = เส้นล่างสุด) */
+  var LEVELS = {
+    easy:   { steps: [-2, -1, 0, 1, 2, 3, 4, 5], t0: 7.0, tmin: 2.6 },
+    medium: { steps: [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9], t0: 6.0, tmin: 2.0 },
+    hard:   { steps: [-4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], t0: 5.0, tmin: 1.6 }
+  };
+  var BEST_KEY = 'note-catcher-best-v1';
+  var SET_KEY = 'note-catcher-settings-v1';
+  var CARD_H = 104;
+  var CATCH_INSET = 18;
+  var SPAWN_DELAY = 0.6;
+
+  /* ---------- องค์ประกอบ SVG ของการ์ด ---------- */
+  var GAP = 12;
+  var BOTTOM_Y = 84;
+  var NOTE_X = 90;
+  var LEDGER_HALF = 11;
+  var STAFF_LEFT = 36;
+  var STAFF_RIGHT = 148;
+
+  /* ---------- อ้างอิง DOM ---------- */
+  var fieldEl = document.getElementById('field');
+  var cardEl = document.getElementById('card');
+  var catchEl = document.getElementById('catch');
+  var feedbackEl = document.getElementById('feedback');
+  var liveEl = document.getElementById('live');
+  var scoreNumEl = document.getElementById('scoreNum');
+  var multEl = document.getElementById('mult');
+  var livesEl = document.getElementById('lives');
+  var hearts = livesEl.querySelectorAll('.heart');
+  var padEl = document.getElementById('pad');
+  var panelIdle = document.getElementById('panelIdle');
+  var panelPaused = document.getElementById('panelPaused');
+  var panelOver = document.getElementById('panelOver');
+  var idleBestEl = document.getElementById('idleBest');
+  var finalScoreEl = document.getElementById('finalScore');
+  var overBestEl = document.getElementById('overBest');
+  var newBestEl = document.getElementById('newBest');
+  var overCorrectEl = document.getElementById('overCorrect');
+  var overAccEl = document.getElementById('overAcc');
+  var missesBox = document.getElementById('missesBox');
+  var missRows = document.getElementById('missRows');
+  var noticeEl = document.getElementById('storageNotice');
+  var levelSeg = document.getElementById('levelSeg');
+  var modeSeg = document.getElementById('modeSeg');
+  var nameSeg = document.getElementById('nameSeg');
+  var clefGrid = document.getElementById('clefGrid');
+  var accSeg = document.getElementById('accSeg');
+  var accPad = document.getElementById('accPad');
+  var inputSeg = document.getElementById('inputSeg');
+  var pianoEl = document.getElementById('piano');
+  var pianoWhites = document.getElementById('pianoWhites');
+  var pianoBlacks = document.getElementById('pianoBlacks');
+  var idleNoteEl = document.getElementById('idleNote');
+  var volEl = document.getElementById('vol');
+
+  /* ---------- ที่เก็บข้อมูล (มี try/catch ทุกครั้ง) ---------- */
+  var memory = {};
+  var storageOK = true;
+  try {
+    window.localStorage.setItem('__nc_probe__', '1');
+    window.localStorage.removeItem('__nc_probe__');
+  } catch (e) {
+    storageOK = false;
+  }
+  function readJSON(key) {
+    try {
+      var raw = window.localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return Object.prototype.hasOwnProperty.call(memory, key) ? memory[key] : null;
+    }
+  }
+  function writeJSON(key, value) {
+    memory[key] = value;
+    try {
+      window.localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      if (storageOK) { storageOK = false; showNotice(); }
+    }
+  }
+  function showNotice() {
+    if (noticeEl) { noticeEl.hidden = false; }
+  }
+
+  /* ---------- สถานะเกม ---------- */
+  var state = 'idle';
+  var levelKey = 'easy';
+  var displayMode = 'staff';
+  var namesMode = 'latin';
+  var clefMode = 'treble';
+  var accSet = 'single';
+  var armedAcc = 'natural';
+  var inputMode = 'name';
+  var volume = 0.6;
+  var bests = { easy: 0, medium: 0, hard: 0 };
+
+  var lives = 3;
+  var score = 0;
+  var combo = 0;
+  var correctCount = 0;
+  var cardsShown = 0;
+  var misses = {};
+  var T = 7;
+  var card = null;
+  var spawnDelay = 0;
+  var lastMidi = -1;
+  var rafId = 0;
+  var lastTs = 0;
+  var flashTimer = 0;
+  var fbTimer = 0;
+
+  /* ---------- โหลดค่าที่บันทึกไว้ ---------- */
+  var saved = readJSON(SET_KEY);
+  if (saved && typeof saved === 'object') {
+    if (saved.level === 'easy' || saved.level === 'medium' || saved.level === 'hard') { levelKey = saved.level; }
+    if (saved.mode === 'letter') { displayMode = 'letter'; }
+    if (saved.names === 'solfege') { namesMode = 'solfege'; }
+    if (saved.clef === 'mixed' || CLEFS[saved.clef]) { clefMode = saved.clef; }
+    if (saved.acc === 'none' || saved.acc === 'single' || saved.acc === 'all') { accSet = saved.acc; }
+    if (saved.input === 'piano') { inputMode = 'piano'; }
+    if (typeof saved.volume === 'number' && saved.volume >= 0 && saved.volume <= 1) { volume = saved.volume; }
+  }
+  var savedBest = readJSON(BEST_KEY);
+  if (savedBest && typeof savedBest === 'object') {
+    ['easy', 'medium', 'hard'].forEach(function (k) {
+      if (typeof savedBest[k] === 'number' && savedBest[k] > 0) { bests[k] = Math.floor(savedBest[k]); }
+    });
+  }
+
+  function saveSettings() {
+    writeJSON(SET_KEY, { level: levelKey, mode: displayMode, names: namesMode, clef: clefMode, acc: accSet, input: inputMode, volume: volume });
+  }
+
+  /* ---------- เสียง (Web Audio) ---------- */
+  var actx = null;
+  var masterGain = null;
+
+  function audio() {
+    if (actx) {
+      if (actx.state === 'suspended') { actx.resume(); }
+      return actx;
+    }
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { return null; }
+    try { actx = new AC(); } catch (e) { actx = null; return null; }
+    masterGain = actx.createGain();
+    masterGain.gain.value = 0.25 * volume;
+    masterGain.connect(actx.destination);
+    if (actx.state === 'suspended') { actx.resume(); }
+    return actx;
+  }
+
+  function freqOf(midi) {
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
+
+  /* โน้ตหนึ่งตัว: attack สั้น hold แล้ว release เชิงเส้น */
+  function blip(delay, freq, type, atk, hold, rel) {
+    var ctx = audio();
+    if (!ctx || !masterGain) { return; }
+    var t0 = ctx.currentTime + delay;
+    var osc = ctx.createOscillator();
+    var env = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    env.gain.setValueAtTime(0, t0);
+    env.gain.linearRampToValueAtTime(0.9, t0 + atk);
+    env.gain.setValueAtTime(0.9, t0 + atk + hold);
+    env.gain.linearRampToValueAtTime(0, t0 + atk + hold + rel);
+    osc.connect(env);
+    env.connect(masterGain);
+    osc.start(t0);
+    osc.stop(t0 + atk + hold + rel + 0.02);
+  }
+
+  function playNote(midi) { blip(0, freqOf(midi), 'sine', 0.01, 0.34, 0.15); }
+  function playError() { blip(0, 110, 'triangle', 0.01, 0.09, 0.06); }
+  function playGameOver(newBest) {
+    blip(0, freqOf(67), 'sine', 0.01, 0.18, 0.06);
+    blip(0.25, freqOf(60), 'sine', 0.01, 0.18, 0.06);
+    if (newBest) {
+      blip(0.9, freqOf(72), 'sine', 0.01, 0.06, 0.05);
+      blip(1.02, freqOf(76), 'sine', 0.01, 0.06, 0.05);
+      blip(1.14, freqOf(79), 'sine', 0.01, 0.06, 0.05);
+    }
+  }
+
+  /* ---------- ชื่อโน้ต ---------- */
+  function noteName(pc, acc) {
+    var base = namesMode === 'solfege' ? SOLFEGE[pc] : LETTERS[pc];
+    return base + (acc ? (ACC_TEXT[acc] || '') : '');
+  }
+
+  /* แปลงขั้นบนบรรทัดเป็นระดับเสียง จริงตามเคลฟที่ใช้ */
+  function pitchFor(clefKey, step) {
+    var c = CLEFS[clefKey];
+    var d = c.bottomOct * 7 + c.bottomLetter + step;
+    var oct = Math.floor(d / 7);
+    var letter = d - oct * 7;
+    return { midi: (oct + 1) * 12 + SEMI[letter], pc: letter, octave: oct };
+  }
+
+  /* ---------- เคลฟ (วาดด้วยเส้น ไม่พึ่งฟอนต์) ---------- */
+  var TREBLE_GLYPH = '<g transform="translate(0,2.6)">' +
+    '<path class="clef-stroke" d="M 8.5 27 C 13 26 17 22 18.4 15 C 19.6 7 20 0 20 -8 ' +
+    'C 20 -19 20.5 -31 18.5 -39 C 16.5 -47 10.5 -50.5 5.5 -48 C 0.5 -45.5 -0.5 -38 1.5 -32 ' +
+    'C 3.5 -26 9 -21 14 -18 C 19.5 -14.5 22 -9 21 -3 C 20 3 15 6 10.5 5 C 6 4 3.5 0 4.5 -4.5 ' +
+    'C 5.5 -9 10.5 -11 13.5 -8.5 C 15.5 -7 15.8 -4 14.2 -2.6"/>' +
+    '<ellipse class="clef-dot" cx="6.5" cy="28" rx="3.8" ry="2.9" transform="rotate(-28 6.5 28)"/></g>';
+
+  var BASS_GLYPH =
+    '<circle class="clef-dot" cx="7.5" cy="0" r="4"/>' +
+    '<path class="clef-dot" d="M 11 -2 C 20 1 25 7 25 15 C 25 23 20 29 14 31 ' +
+    'C 19 27 20.5 21.5 20.3 15 C 20.1 8.5 16.5 3 8.5 2 Z"/>' +
+    '<circle class="clef-dot" cx="28.5" cy="-6" r="2.3"/>' +
+    '<circle class="clef-dot" cx="28.5" cy="6" r="2.3"/>';
+
+  var C_GLYPH =
+    '<path class="clef-stroke" d="M 6 -19 L 6 19" stroke-width="4.4"/>' +
+    '<path class="clef-stroke" d="M 12 -19 L 12 19" stroke-width="1.5"/>' +
+    '<path class="clef-stroke" stroke-width="3.4" d="M 13 -18.5 C 23 -18.5 27 -13.5 27 -9 ' +
+    'C 27 -4 23 -0.5 13.5 0 C 23 0.5 27 4 27 9 C 27 13.5 23 18.5 13 18.5"/>';
+
+  /* ---------- เครื่องหมายแปลงเสียง (วาดเองเช่นกัน) ---------- */
+  var FLAT_PATH =
+    '<path class="acc-stroke" d="M -5 -11 L -5 5"/>' +
+    '<path class="acc-stroke" d="M -5 -4 C -1 -2.4 -0.2 -1 -0.2 0.6 C -0.2 2.6 -2.4 5 -5 5"/>';
+
+  var ACC_GLYPH = {
+    natural:
+      '<path class="acc-stroke" d="M -7.2 -8.5 L -7.2 2 M -1 -2 L -1 8.5"/>' +
+      '<path class="acc-stroke" stroke-width="2.4" d="M -7.2 -2 L -1 -4.4 M -7.2 4.4 L -1 2"/>',
+    sharp:
+      '<path class="acc-stroke" d="M -9.2 -8 L -9.2 8 M -3.2 -8 L -3.2 8"/>' +
+      '<path class="acc-stroke" stroke-width="2.6" d="M -11.6 -1.8 L -0.6 -4 M -11.6 4 L -0.6 1.8"/>',
+    flat: FLAT_PATH,
+    dsharp:
+      '<path class="acc-stroke" stroke-width="2.5" d="M -10.6 -5.4 L -1.4 5.4 M -10.6 5.4 L -1.4 -5.4"/>' +
+      '<path class="acc-stroke" stroke-width="2" d="M -12.6 -5.4 L -9 -5.4 M -3 -5.4 L 0.4 -5.4 ' +
+      'M -12.6 5.4 L -9 5.4 M -3 5.4 L 0.4 5.4"/>',
+    dflat: '<g transform="translate(-7.2,0)">' + FLAT_PATH + '</g>' + FLAT_PATH
+  };
+
+  /* viewBox ของไอคอนในแถบกด */
+  var ACC_VB = {
+    natural: '-8 -9.5 9.5 19',
+    sharp: '-12.6 -9 13.6 18',
+    flat: '-6 -12 7 19',
+    dsharp: '-13.6 -6.5 15 13',
+    dflat: '-12.6 -12 13.6 19'
+  };
+
+  function accGlyph(acc) { return ACC_GLYPH[acc] || ''; }
+
+  function accIcon(acc) {
+    return '<svg class="acc-icon" viewBox="' + ACC_VB[acc] + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">' +
+      accGlyph(acc) + '</svg>';
+  }
+
+  function clefGlyph(clefKey) {
+    if (clefKey === 'bass') { return BASS_GLYPH; }
+    if (clefKey === 'alto' || clefKey === 'tenor') { return C_GLYPH; }
+    return TREBLE_GLYPH;
+  }
+
+  /* ---------- วาดการ์ด ---------- */
+  function stepY(step) { return BOTTOM_Y - step * (GAP / 2); }
+
+  function staffSVG(clefKey, step, acc) {
+    var parts = [];
+    var s, y;
+    for (s = 0; s <= 8; s += 2) {
+      y = stepY(s);
+      parts.push('<line class="staff-line" x1="' + STAFF_LEFT + '" y1="' + y + '" x2="' + STAFF_RIGHT + '" y2="' + y + '"/>');
+    }
+    parts.push('<line class="staff-line" x1="' + STAFF_LEFT + '" y1="' + stepY(8) + '" x2="' + STAFF_LEFT + '" y2="' + stepY(0) + '"/>');
+    parts.push('<g transform="translate(2,' + stepY(CLEFS[clefKey].anchor) + ')">' + clefGlyph(clefKey) + '</g>');
+    if (step <= -2) {
+      for (s = -2; s >= step; s -= 2) {
+        y = stepY(s);
+        parts.push('<line class="staff-ledger" x1="' + (NOTE_X - LEDGER_HALF) + '" y1="' + y + '" x2="' + (NOTE_X + LEDGER_HALF) + '" y2="' + y + '"/>');
+      }
+    }
+    if (step >= 10) {
+      for (s = 10; s <= step; s += 2) {
+        y = stepY(s);
+        parts.push('<line class="staff-ledger" x1="' + (NOTE_X - LEDGER_HALF) + '" y1="' + y + '" x2="' + (NOTE_X + LEDGER_HALF) + '" y2="' + y + '"/>');
+      }
+    }
+    y = stepY(step);
+    if (acc && acc !== 'natural') {
+      parts.push('<g transform="translate(78,' + y + ')">' + accGlyph(acc) + '</g>');
+    }
+    parts.push('<ellipse class="notehead" cx="' + NOTE_X + '" cy="' + y + '" rx="7.5" ry="5.5" transform="rotate(-20 ' + NOTE_X + ' ' + y + ')"/>');
+    return '<svg viewBox="0 0 150 120" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">' + parts.join('') + '</svg>';
+  }
+
+  /* ---------- ปุ่มตอบ ---------- */
+  function buildPad() {
+    var html = '';
+    for (var i = 0; i < 7; i++) {
+      html += '<button type="button" data-pc="' + i + '" aria-label="โน้ต ' + LETTERS[i] + ' (คีย์ ' + KEY_HINTS[i] + ')">' +
+        '<span class="k">' + LETTERS[i] + '</span>' +
+        '<span class="hint" aria-hidden="true">' + KEY_HINTS[i] + '</span>' +
+        '</button>';
+    }
+    padEl.innerHTML = html;
+    refreshPadLabels();
+  }
+
+  function refreshPadLabels() {
+    var buttons = padEl.querySelectorAll('button[data-pc]');
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].querySelector('.k').textContent = noteName(i);
+    }
+    if (namesMode === 'solfege') {
+      padEl.classList.add('solfege');
+    } else {
+      padEl.classList.remove('solfege');
+    }
+  }
+
+  /* ---------- คีย์เปียโน ---------- */
+  var PIANO_ORDER = [
+    { pc: 0, acc: 'natural', hint: 'a' },
+    { pc: 0, acc: 'sharp',   hint: 'w' },
+    { pc: 1, acc: 'natural', hint: 's' },
+    { pc: 1, acc: 'sharp',   hint: 'e' },
+    { pc: 2, acc: 'natural', hint: 'd' },
+    { pc: 3, acc: 'natural', hint: 'f' },
+    { pc: 3, acc: 'sharp',   hint: 't' },
+    { pc: 4, acc: 'natural', hint: 'g' },
+    { pc: 4, acc: 'sharp',   hint: 'y' },
+    { pc: 5, acc: 'natural', hint: 'h' },
+    { pc: 5, acc: 'sharp',   hint: 'u' },
+    { pc: 6, acc: 'natural', hint: 'j' }
+  ];
+
+  function buildPiano() {
+    var whiteW = 100 / 7;
+    var blackW = whiteW * 0.58;
+    var whites = '';
+    var blacks = '';
+    for (var i = 0; i < PIANO_ORDER.length; i++) {
+      var k = PIANO_ORDER[i];
+      var label = LETTERS[k.pc] + ACC_TEXT[k.acc];
+      if (k.acc === 'natural') {
+        whites += '<button type="button" class="key-white" data-pc="' + k.pc + '" data-acc="natural" ' +
+          'data-key="' + k.hint + '" aria-label="' + label + '">' +
+          '<span class="key-note" aria-hidden="true">' + LETTERS[k.pc] + '</span>' +
+          '<span class="key-hint" aria-hidden="true">' + k.hint + '</span></button>';
+      } else {
+        var left = (whiteW * (k.pc + 1) - blackW / 2).toFixed(3);
+        var sharpName = LETTERS[k.pc] + ACC_TEXT[k.acc];
+        var flatName = LETTERS[k.pc + 1] + ACC_TEXT.flat;
+        blacks += '<button type="button" class="key-black" data-pc="' + k.pc + '" data-acc="sharp" ' +
+          'data-key="' + k.hint + '" aria-label="' + sharpName + ' หรือ ' + flatName + '" ' +
+          'style="left:' + left + '%;width:' + blackW.toFixed(3) + '%">' +
+          '<span class="key-note" aria-hidden="true">' +
+          '<span class="key-enh">' + sharpName + '</span>' +
+          '<span class="key-enh">' + flatName + '</span>' +
+          '</span></button>';
+      }
+    }
+    pianoWhites.innerHTML = whites;
+    pianoBlacks.innerHTML = blacks;
+  }
+
+  function updateInputUI() {
+    var isPiano = inputMode === 'piano';
+    pianoEl.hidden = !isPiano;
+    padEl.hidden = isPiano;
+    accPad.hidden = isPiano || accSet === 'none';
+    idleNoteEl.textContent = isPiano
+      ? 'ดูโน้ตที่ตกลงมา แล้วกดคีย์เปียโนให้ตรงกับโน้ตก่อนถึงเส้น'
+      : 'ดูโน้ตที่ตกลงมา แล้วกดชื่อโน้ตให้ทันก่อนถึงเส้น';
+  }
+
+  /* เสียงจริง (chromatic) ของชื่อโน้ต + เครื่องหมาย */
+  function chromaOf(pc, acc) {
+    var v = (SEMI[pc] + ACC_OFFSET[acc]) % 12;
+    return v < 0 ? v + 12 : v;
+  }
+
+  function submit(pc, acc) {
+    if (state !== 'playing' || !card) { return; }
+    var good;
+    if (inputMode === 'piano') {
+      /* เปียโน: ตัดสินที่เสียงจริง C♯ กับ D♭ เป็นคีย์เดียวกัน */
+      good = chromaOf(pc, acc) === chromaOf(card.pc, card.acc);
+    } else {
+      good = (pc === card.pc && acc === card.acc);
+    }
+    if (good) { onCorrect(); } else { onWrong(); }
+  }
+
+  /* ---------- แถบเครื่องหมายแปลงเสียง ---------- */
+  function buildAccPad() {
+    var html = '';
+    for (var i = 0; i < ACC_KEYS.length; i++) {
+      var k = ACC_KEYS[i];
+      html += '<button type="button" data-acc="' + k + '" aria-pressed="' + (k === 'natural' ? 'true' : 'false') +
+        '" aria-label="' + ACC_ARIA[k] + '">' + accIcon(k) +
+        '<span class="hint" aria-hidden="true">' + (i + 1) + '</span></button>';
+    }
+    accPad.innerHTML = html;
+  }
+
+  function syncAccPad() {
+    var btns = accPad.querySelectorAll('button[data-acc]');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].setAttribute('aria-pressed', btns[i].getAttribute('data-acc') === armedAcc ? 'true' : 'false');
+    }
+  }
+
+  function updateAccPadVisibility() {
+    accPad.hidden = (inputMode === 'piano' || accSet === 'none');
+  }
+
+  /* ---------- แถบเลือกเคลฟ ---------- */
+  function clefIcon(clefKey) {
+    var vb = clefKey === 'treble' ? '-1.5 -50 26.5 86'
+      : (clefKey === 'bass' ? '1 -11 33 46' : '1 -23 30 46');
+    return '<svg class="clef-icon" viewBox="' + vb + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">' +
+      clefGlyph(clefKey) + '</svg>';
+  }
+
+  function buildClefGrid() {
+    var html = '';
+    for (var i = 0; i < CLEF_KEYS.length; i++) {
+      var k = CLEF_KEYS[i];
+      html += '<button type="button" data-v="' + k + '" aria-pressed="false" aria-label="เคลฟ' + CLEFS[k].label + '">' +
+        clefIcon(k) + '<span>' + CLEFS[k].label + '</span></button>';
+    }
+    html += '<button type="button" class="clef-mixed" data-v="mixed" aria-pressed="false" aria-label="เคลฟผสม สุ่มทุกใบ">ผสม</button>';
+    clefGrid.innerHTML = html;
+  }
+
+  /* ---------- HUD ---------- */
+  function multiplier() { return Math.min(4, 1 + Math.floor(combo / 5)); }
+
+  function updateHud() {
+    scoreNumEl.textContent = String(score);
+    var m = multiplier();
+    if (m > 1) {
+      multEl.hidden = false;
+      multEl.textContent = '×' + m;
+    } else {
+      multEl.hidden = true;
+    }
+    for (var i = 0; i < hearts.length; i++) {
+      if (i < lives) {
+        hearts[i].classList.remove('off');
+      } else {
+        hearts[i].classList.add('off');
+      }
+    }
+    livesEl.setAttribute('aria-label', 'ชีวิตเหลือ ' + Math.max(0, lives));
+  }
+
+  /* ---------- ข้อความตอบกลับ ---------- */
+  function showFeedback(text, kind) {
+    feedbackEl.textContent = text;
+    feedbackEl.className = 'feedback show ' + kind;
+    liveEl.textContent = text;
+    window.clearTimeout(fbTimer);
+    fbTimer = window.setTimeout(function () {
+      feedbackEl.className = 'feedback ' + kind;
+    }, 700);
+  }
+
+  function flashCatch(kind) {
+    catchEl.classList.remove('good', 'bad');
+    catchEl.classList.add(kind);
+    window.clearTimeout(flashTimer);
+    flashTimer = window.setTimeout(function () {
+      catchEl.classList.remove('good', 'bad');
+    }, 180);
+  }
+
+  /* ---------- แผงสถานะ ---------- */
+  function showPanel(name) {
+    panelIdle.hidden = name !== 'idle';
+    panelPaused.hidden = name !== 'paused';
+    panelOver.hidden = name !== 'over';
+  }
+
+  function setOptionsDisabled(disabled) {
+    var segs = [levelSeg, modeSeg, nameSeg, clefGrid, accSeg];
+    for (var i = 0; i < segs.length; i++) {
+      var buttons = segs[i].querySelectorAll('button');
+      for (var j = 0; j < buttons.length; j++) {
+        buttons[j].disabled = disabled;
+      }
+    }
+  }
+
+  function renderIdle() {
+    idleBestEl.textContent = String(bests[levelKey] || 0);
+  }
+
+  /* ---------- ตัวเลือก ---------- */
+  function syncSegments() {
+    var pairs = [[levelSeg, levelKey], [inputSeg, inputMode], [accSeg, accSet],
+      [clefGrid, clefMode], [modeSeg, displayMode], [nameSeg, namesMode]];
+    for (var i = 0; i < pairs.length; i++) {
+      var seg = pairs[i][0];
+      var value = pairs[i][1];
+      var buttons = seg.querySelectorAll('button');
+      for (var j = 0; j < buttons.length; j++) {
+        buttons[j].setAttribute('aria-pressed', buttons[j].getAttribute('data-v') === value ? 'true' : 'false');
+      }
+    }
+  }
+
+  function bindSeg(seg, key, alwaysOn) {
+    seg.addEventListener('click', function (ev) {
+      var btn = ev.target.closest ? ev.target.closest('button[data-v]') : null;
+      if (!btn) { return; }
+      /* วิธีตอบสลับได้ตลอดเวลา ที่เหลือล็อกระหว่างเล่น */
+      if (!alwaysOn && (state === 'playing' || state === 'paused')) { return; }
+      var v = btn.getAttribute('data-v');
+      if (key === 'level') { levelKey = v; renderIdle(); }
+      else if (key === 'input') { inputMode = v; updateInputUI(); }
+      else if (key === 'acc') { accSet = v; armedAcc = 'natural'; syncAccPad(); updateAccPadVisibility(); }
+      else if (key === 'clef') { clefMode = v; }
+      else if (key === 'mode') { displayMode = v; }
+      else { namesMode = v; refreshPadLabels(); }
+      syncSegments();
+      saveSettings();
+    });
+  }
+
+  /* ---------- การ์ดที่ตกลงมา ---------- */
+  function pickAcc() {
+    if (accSet === 'none') { return 'natural'; }
+    var r = Math.random();
+    if (accSet === 'single') {
+      if (r < 0.60) { return 'natural'; }
+      return r < 0.80 ? 'sharp' : 'flat';
+    }
+    if (r < 0.50) { return 'natural'; }
+    if (r < 0.68) { return 'sharp'; }
+    if (r < 0.86) { return 'flat'; }
+    if (r < 0.93) { return 'dsharp'; }
+    return 'dflat';
+  }
+
+  function pickClef() {
+    if (clefMode === 'mixed') {
+      return CLEF_KEYS[Math.floor(Math.random() * CLEF_KEYS.length)];
+    }
+    return clefMode;
+  }
+
+  function spawnCard() {
+    var steps = LEVELS[levelKey].steps;
+    var clefKey = pickClef();
+    var step = steps[Math.floor(Math.random() * steps.length)];
+    var acc = pickAcc();
+    var p = pitchFor(clefKey, step);
+    var midi = p.midi + ACC_OFFSET[acc];
+    var guard = 0;
+    /* ห้ามซ้ำโน้ตเดิม (ระดับเสียงและอ็อกเทฟเดียวกัน) ติดกันสองใบ */
+    while (midi === lastMidi && guard < 40) {
+      clefKey = pickClef();
+      step = steps[Math.floor(Math.random() * steps.length)];
+      acc = pickAcc();
+      p = pitchFor(clefKey, step);
+      midi = p.midi + ACC_OFFSET[acc];
+      guard++;
+    }
+    lastMidi = midi;
+    card = { clef: clefKey, step: step, acc: acc, midi: midi, pc: p.pc, progress: 0, penalized: false };
+    cardsShown += 1;
+    armedAcc = 'natural';
+    syncAccPad();
+    if (displayMode === 'letter') {
+      cardEl.innerHTML = '<span class="big">' + noteName(p.pc, acc) + '</span>';
+    } else {
+      cardEl.innerHTML = staffSVG(clefKey, step, acc);
+    }
+    cardEl.setAttribute('aria-label', 'โน้ต ' + noteName(p.pc, acc) + ' เคลฟ' + CLEFS[clefKey].label);
+    cardEl.setAttribute('data-note', LETTERS[p.pc]);
+    cardEl.setAttribute('data-acc', acc);
+    cardEl.setAttribute('data-clef', clefKey);
+    cardEl.setAttribute('data-step', String(step));
+    cardEl.hidden = false;
+    cardEl.style.transform = 'translate3d(0,0,0)';
+  }
+
+  function travel() {
+    var h = fieldEl.clientHeight;
+    var t = h - CATCH_INSET - CARD_H;
+    return t < 40 ? 40 : t;
+  }
+
+  function paintCard() {
+    if (!card) {
+      cardEl.hidden = true;
+      return;
+    }
+    var y = card.progress * travel();
+    cardEl.style.transform = 'translate3d(0,' + Math.round(y) + 'px,0)';
+  }
+
+  function resolveCard() {
+    card = null;
+    cardEl.hidden = true;
+    spawnDelay = SPAWN_DELAY;
+  }
+
+  /* ---------- กติกาเกม ---------- */
+  function countMiss(pc, acc) {
+    var key = pc + ':' + acc;
+    misses[key] = (misses[key] || 0) + 1;
+  }
+
+  function onCorrect() {
+    var m = multiplier();
+    score += 10 * m;
+    combo += 1;
+    correctCount += 1;
+    T = Math.max(LEVELS[levelKey].tmin, T - 0.15);
+    var midi = card.midi;
+    playNote(midi);
+    flashCatch('good');
+    showFeedback('ถูก! ' + noteName(card.pc, card.acc), 'good');
+    updateHud();
+    resolveCard();
+  }
+
+  function onWrong() {
+    if (card.penalized) { return; }
+    card.penalized = true;
+    lives -= 1;
+    combo = 0;
+    countMiss(card.pc, card.acc);
+    playError();
+    flashCatch('bad');
+    showFeedback('ผิด คำตอบคือ ' + noteName(card.pc, card.acc), 'bad');
+    updateHud();
+    if (lives <= 0) { endGame(); }
+  }
+
+  function onMiss() {
+    var c = card;
+    if (!c.penalized) {
+      lives -= 1;
+      countMiss(c.pc, c.acc);
+    }
+    combo = 0;
+    playError();
+    flashCatch('bad');
+    showFeedback('ไม่ทัน คำตอบคือ ' + noteName(c.pc, c.acc), 'bad');
+    updateHud();
+    resolveCard();
+    if (lives <= 0) { endGame(); }
+  }
+
+  function answer(pc) {
+    submit(pc, armedAcc);
+  }
+
+  /* ---------- ลูปเกม ---------- */
+  function step(dt) {
+    if (card) {
+      card.progress += dt / T;
+      if (card.progress >= 1) {
+        card.progress = 1;
+        onMiss();
+      }
+    } else {
+      spawnDelay -= dt;
+      if (spawnDelay <= 0) { spawnCard(); }
+    }
+  }
+
+  function tick(ts) {
+    if (state !== 'playing') { rafId = 0; return; }
+    if (!lastTs) { lastTs = ts; }
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if (dt > 0.05) { dt = 0.05; }
+    if (dt < 0) { dt = 0; }
+    step(dt);
+    paintCard();
+    if (state !== 'playing') { rafId = 0; return; }
+    rafId = window.requestAnimationFrame(tick);
+  }
+
+  function startLoop() {
+    if (rafId) { return; }
+    lastTs = 0;
+    rafId = window.requestAnimationFrame(tick);
+  }
+
+  function stopLoop() {
+    if (rafId) {
+      window.cancelAnimationFrame(rafId);
+      rafId = 0;
+    }
+  }
+
+  /* ---------- เริ่ม / หยุด / จบ ---------- */
+  function startGame() {
+    audio();
+    state = 'playing';
+    lives = 3;
+    score = 0;
+    combo = 0;
+    correctCount = 0;
+    cardsShown = 0;
+    misses = {};
+    armedAcc = 'natural';
+    T = LEVELS[levelKey].t0;
+    card = null;
+    spawnDelay = 0;
+    cardEl.hidden = true;
+    window.clearTimeout(fbTimer);
+    feedbackEl.className = 'feedback';
+    window.clearTimeout(flashTimer);
+    catchEl.classList.remove('good', 'bad');
+    showPanel(null);
+    setOptionsDisabled(true);
+    updateHud();
+    spawnCard();
+    paintCard();
+    startLoop();
+  }
+
+  function pauseGame() {
+    if (state !== 'playing') { return; }
+    state = 'paused';
+    stopLoop();
+    showPanel('paused');
+  }
+
+  function resumeGame() {
+    if (state !== 'paused') { return; }
+    state = 'playing';
+    showPanel(null);
+    startLoop();
+  }
+
+  function endGame() {
+    state = 'over';
+    stopLoop();
+    card = null;
+    cardEl.hidden = true;
+    window.clearTimeout(fbTimer);
+    feedbackEl.className = 'feedback';
+    window.clearTimeout(flashTimer);
+    catchEl.classList.remove('good', 'bad');
+    setOptionsDisabled(false);
+    showPanel('over');
+
+    var prev = bests[levelKey] || 0;
+    var isBest = score > prev;
+    if (isBest) {
+      bests[levelKey] = score;
+      writeJSON(BEST_KEY, bests);
+    }
+    var shownBest = Math.max(prev, score);
+
+    finalScoreEl.textContent = String(score);
+    overBestEl.textContent = String(shownBest);
+    if (isBest) {
+      newBestEl.hidden = false;
+    } else {
+      newBestEl.hidden = true;
+    }
+    overCorrectEl.textContent = 'ตอบถูก ' + correctCount + ' ข้อ';
+    var acc = cardsShown > 0 ? Math.round((correctCount / cardsShown) * 100) : 0;
+    overAccEl.textContent = 'แม่นยำ ' + acc + '%';
+
+    var order = [];
+    for (var mk in misses) {
+      if (misses[mk] > 0) { order.push(mk); }
+    }
+    order.sort(function (a, b) { return (misses[b] - misses[a]) || (a < b ? -1 : 1); });
+    order = order.slice(0, 3);
+    var rows = '';
+    for (var i = 0; i < order.length; i++) {
+      var bits = order[i].split(':');
+      rows += '<tr><th scope="row">' + noteName(parseInt(bits[0], 10), bits[1]) + '</th><td>' + misses[order[i]] + '</td></tr>';
+    }
+    missRows.innerHTML = rows;
+    missesBox.hidden = order.length === 0;
+
+    playGameOver(isBest);
+    renderIdle();
+    updateHud();
+  }
+
+  /* ---------- เหตุการณ์ ---------- */
+  document.getElementById('startBtn').addEventListener('click', startGame);
+  document.getElementById('againBtn').addEventListener('click', startGame);
+  document.getElementById('restartBtn').addEventListener('click', startGame);
+  document.getElementById('resumeBtn').addEventListener('click', resumeGame);
+
+  pianoEl.addEventListener('pointerdown', function (ev) {
+    var btn = ev.target.closest ? ev.target.closest('button[data-pc]') : null;
+    if (!btn) { return; }
+    ev.preventDefault();
+    submit(parseInt(btn.getAttribute('data-pc'), 10), btn.getAttribute('data-acc'));
+  });
+
+  accPad.addEventListener('pointerdown', function (ev) {
+    var btn = ev.target.closest ? ev.target.closest('button[data-acc]') : null;
+    if (!btn) { return; }
+    ev.preventDefault();
+    if (state !== 'playing') { return; }
+    armedAcc = btn.getAttribute('data-acc');
+    syncAccPad();
+  });
+
+  padEl.addEventListener('pointerdown', function (ev) {
+    var btn = ev.target.closest ? ev.target.closest('button[data-pc]') : null;
+    if (!btn) { return; }
+    ev.preventDefault();
+    answer(parseInt(btn.getAttribute('data-pc'), 10));
+  });
+
+  bindSeg(levelSeg, 'level');
+  bindSeg(inputSeg, 'input', true);
+  bindSeg(accSeg, 'acc');
+  bindSeg(clefGrid, 'clef');
+  bindSeg(modeSeg, 'mode');
+  bindSeg(nameSeg, 'names');
+
+  document.getElementById('testBtn').addEventListener('click', function () {
+    audio();
+    blip(0, 440, 'sine', 0.01, 0.34, 0.15);
+  });
+
+  volEl.addEventListener('input', function () {
+    volume = Number(volEl.value) / 100;
+    if (masterGain && actx) {
+      masterGain.gain.setTargetAtTime(0.25 * volume, actx.currentTime, 0.02);
+    }
+    saveSettings();
+  });
+
+  document.addEventListener('keydown', function (ev) {
+    if (ev.repeat) { return; }
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) { return; }
+    var tag = ev.target && ev.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') { return; }
+
+    var k = ev.key;
+    var lower = k.length === 1 ? k.toLowerCase() : k;
+
+    if (inputMode === 'piano') {
+      /* แป้นพิมพ์แบบเปียโน: a w s e d f t g y h u j */
+      for (var pi = 0; pi < PIANO_ORDER.length; pi++) {
+        if (PIANO_ORDER[pi].hint === lower) {
+          if (state === 'playing') {
+            ev.preventDefault();
+            submit(PIANO_ORDER[pi].pc, PIANO_ORDER[pi].acc);
+          }
+          return;
+        }
+      }
+    } else {
+      var idx = KEY_HINTS.indexOf(lower);
+      if (idx >= 0) {
+        if (state === 'playing') {
+          ev.preventDefault();
+          answer(idx);
+        }
+        return;
+      }
+      var digit = '12345'.indexOf(k);
+      if (digit >= 0) {
+        if (state === 'playing' && accSet !== 'none') {
+          ev.preventDefault();
+          armedAcc = ACC_KEYS[digit];
+          syncAccPad();
+        }
+        return;
+      }
+    }
+    if (k === ' ' || k === 'Spacebar' || lower === 'p') {
+      if (state === 'playing') {
+        ev.preventDefault();
+        pauseGame();
+      } else if (state === 'paused') {
+        ev.preventDefault();
+        resumeGame();
+      }
+      return;
+    }
+    if (k === 'Enter') {
+      if (state === 'idle' || state === 'over') {
+        ev.preventDefault();
+        startGame();
+      }
+    }
+  });
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden && state === 'playing') { pauseGame(); }
+  });
+
+  window.addEventListener('blur', function () {
+    if (state === 'playing') { pauseGame(); }
+  });
+
+  window.addEventListener('resize', function () {
+    paintCard();
+  });
+
+  /* ---------- เริ่มต้น ---------- */
+  buildPad();
+  buildAccPad();
+  buildPiano();
+  updateInputUI();
+  buildClefGrid();
+  syncSegments();
+  volEl.value = String(Math.round(volume * 100));
+  renderIdle();
+  showPanel('idle');
+  updateHud();
+  setOptionsDisabled(false);
+  if (!storageOK) { showNotice(); }
+})();
+</script>
+</body>
+</html>
